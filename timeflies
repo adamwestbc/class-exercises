@@ -1,0 +1,99 @@
+;; a function that consumes a time and produces a string   
+;; representing the time in 12 hour format with "AM" to indicate
+;; morning and "PM" to indicate afternoon.
+
+(define-struct time (hours minutes seconds))
+;; Time is (make-time Interval[0,23] Interval[0,59] and Interval[0,59]
+;; interp. a time with hours minutes, and seconds in 24 hour format
+
+(define T1 (make-time 00 00 00)) ;;midnight
+(define T4 (make-time 24 00 00)) ;; also midnight
+(define T2 (make-time 12 00 00)) ;; noon
+(define T3 (make-time 23 59 59)) ;;almost midnight
+
+;; Template
+(define (fn-for-time t)
+  (... (time-hours t)
+       (time-minutes t)
+       (time-seconds t)))
+
+;; Time -> String
+;; takes 24 hour time and coverts it to 12 hour time
+;; (define (master t) " ")
+(check-expect (master (make-time 01 00 00))"01:00:00 AM")
+(check-expect (master (make-time 12 00 00))"12:00:00 PM")
+(check-expect (master (make-time 23 59 59))"11:59:59 PM")
+(check-expect (master (make-time 24 00 00))"12:00:00 AM")
+
+(define (master t)
+  (cond [(AM? t)  (string-append (addzero-h (minus12 t))":"(addzero-m t) ":" (addzero-s t) " AM")]
+        [else     (string-append (addzero-h (minus12 t))":"(addzero-m t) ":" (addzero-s t) " PM")]))
+
+;; Time -> String
+;; function composition of adding zeros to the time
+;; (define (adding t)" ")
+
+;; Time -> String
+;; adds a 0 in front of the hour if it is less than 10
+;; (define (addzero t) " ")
+(check-expect (addzero-h (make-time 2 34 59))"02")
+(check-expect (addzero-h (make-time 10 34 59)) "10")
+
+(define (addzero-h t)
+  (if (< (time-hours t) 10)
+      (string-append "0" (number->string(time-hours t)))
+      (number->string(time-hours t))))
+
+
+;; Time -> String
+;; adds a 0 in front of the minute if it is less than 10
+;; (define (addzero-m t) " ")
+(check-expect (addzero-m (make-time 2 3 59))"03")
+(check-expect (addzero-m (make-time 2 10 59))"10")
+
+(define (addzero-m t)
+  (if (< (time-minutes t) 10)
+      (string-append "0" (number->string (time-minutes t)))
+      (number->string (time-minutes t))))
+
+
+;; Time -> String
+;; adds a 0 in front of the second if it is less than 10
+;; (define (addzero-s t) " ")
+(check-expect (addzero-s (make-time 2 4 5))"05")
+(check-expect (addzero-s (make-time 2 3 10))"10")
+
+(define (addzero-s t)
+  (if(< (time-seconds t) 10)
+     (string-append "0" (number->string(time-seconds t)))
+     (number->string (time-seconds t))))
+
+
+;; Time -> Time
+;; subtracts 12 from the time if it is 13:00 or later
+;; (define (minus12 t) " ")
+(check-expect (minus12 (make-time 24 00 00))(make-time 12 00 00))
+(check-expect (minus12 (make-time 13 00 00))(make-time 01 00 00))
+(check-expect (minus12 (make-time 12 00 00))(make-time 12 00 00))
+
+(define (minus12 t)
+  (if (>= (time-hours t) 13)
+      (make-time (-(time-hours t) 12)(time-minutes t)(time-seconds t))
+      t))
+
+;; Time -> Boolean
+;; checks if it is AM 
+;; (define AM? t) " ")
+;; !!!
+(check-expect (AM? (make-time 01 00 00)) true)
+(check-expect (AM? (make-time 11 59 59)) true)
+(check-expect (AM? (make-time 13 00 00)) false)
+(check-expect (AM? (make-time 12 00 00)) false)
+(check-expect (AM? (make-time 24 00 00)) true)
+
+(define (AM? t)
+  (if (or(< (time-hours t) 12)(= (time-hours t) 24))
+      true
+      false))
+
+
